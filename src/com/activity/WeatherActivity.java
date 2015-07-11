@@ -1,5 +1,6 @@
 package com.activity;
 
+import com.service.AutoUpdateService;
 import com.simple.weather_report.R;
 import com.util.HttpCallbackListener;
 import com.util.HttpUtil;
@@ -101,7 +102,7 @@ public class WeatherActivity extends Activity implements OnClickListener {
 		queryFromServer(address, "countyCode");
 	}
 
-	//查询天气代号所对应的天气。
+	// 查询天气代号所对应的天气。
 	private void queryWeatherInfo(String weatherCode) {
 		String address = "http://www.weather.com.cn/data/cityinfo/"
 				+ weatherCode + ".html";
@@ -159,6 +160,8 @@ public class WeatherActivity extends Activity implements OnClickListener {
 		currentDateText.setText(prefs.getString("current_date", ""));
 		weatherInfoLayout.setVisibility(View.VISIBLE);
 		cityNameText.setVisibility(View.VISIBLE);
+		Intent intent = new Intent(this, AutoUpdateService.class);
+		startService(intent);
 	}
 
 }
