@@ -14,9 +14,13 @@ import com.util.Utility;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -51,7 +55,17 @@ public class ChooseAreaActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean("city_selected", false)) {
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+			return;
+		}
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
+
 		listView = (ListView) findViewById(R.id.list_view);
 		titleText = (TextView) findViewById(R.id.title_text);
 		adapter = new ArrayAdapter<String>(this,
@@ -68,6 +82,13 @@ public class ChooseAreaActivity extends Activity {
 				} else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(index);
 					queryCounties();
+				} else if (currentLevel == LEVEL_COUNTY) {
+					String countyCode = countyList.get(index).getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this,
+							WeatherActivity.class);
+					intent.putExtra("county_code", countyCode);
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
@@ -134,6 +155,7 @@ public class ChooseAreaActivity extends Activity {
 	// 根据传入的代号和类型从服务器上查询省市县数据
 	private void queryFromServer(final String code, final String type) {
 		String address;
+		// 调用TextUtils.isEmpty() 把这个变量作为参数传进去。只要这个参数为空或者为“”，都会返回真
 		if (!TextUtils.isEmpty(code)) {
 			address = "http://www.weather.com.cn/data/list3/city" + code
 					+ ".xml";
@@ -156,6 +178,8 @@ public class ChooseAreaActivity extends Activity {
 							response, selectedCity.get_id());
 				}
 				if (result) {
+					// 利用Activity.runOnUiThread(Runnable)把更新ui的代码创建在Runnable中，
+					// 然后在需要更新ui时，把这个Runnable对象传给Activity.runOnUiThread(Runnable)。
 					// 通过runOnUiThread()方法回到主线程处理逻辑
 					runOnUiThread(new Runnable() {
 						@Override
